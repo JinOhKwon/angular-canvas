@@ -4,13 +4,15 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CavasExampleComponent } from './cavas-example/cavas-example.component';
 import { DassCanvasComponent } from './ui-component/canvas/dass-canvas.component';
+import { PrintComponent } from './ui-component/print/print.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     CavasExampleComponent,
-    DassCanvasComponent
+    DassCanvasComponent,
+    PrintComponent
   ],
   imports: [
     BrowserModule,

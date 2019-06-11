@@ -7,10 +7,10 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 })
 export class DassCanvasComponent implements AfterViewInit, OnInit {
   /**
-     * 뷰 요소 캔버스 객체
-     * 
-     * @description DOM 요소에 있는 타입과 캔버스 객체를 컨버팅하는 과정이다.
-     */
+    * 뷰 요소 캔버스 객체
+    * 
+    * @description DOM 요소에 있는 타입과 캔버스 객체를 컨버팅하는 과정이다.
+    */
   @ViewChild('baseCanvasEl') baseCanvasEl: ElementRef;
 
   /**
@@ -41,13 +41,13 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
   scaleCtx: CanvasRenderingContext2D;
 
   /**
- * 기본 사각형값
- * 
- * @property x 가로
- * @property y 세로
- * @property w 이동한 가로
- * @property h 이동한 세로
- */
+   * 기본 사각형값
+   * 
+   * @property x 가로
+   * @property y 세로
+   * @property w 이동한 가로
+   * @property h 이동한 세로
+   */
   baseRect: {
     x: number,
     y: number,
@@ -81,8 +81,8 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
   imgAddr: string = this.img.src = 'http://www.mhc.kr/files/attach/images/779/229/882/006/a9428b7f2adb9b5b243255d9c5c491dd.jpg';
 
   /**
- * 생성자이다.
- */
+   * 생성자이다.
+   */
   constructor() { }
 
   /**
@@ -268,12 +268,12 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 
       document.getElementById('x').innerHTML =
         `
-            sx: ${this.baseRect.x} <br/>
-            sy: ${this.baseRect.y} <br/>
-            ex: ${coordinate.x} <br/>
-            ey: ${coordinate.y} <br/>
-            moveWidth: ${this.baseRect.w} <br/>
-            moveHeight: ${this.baseRect.h} <br/>
+          sx: ${this.baseRect.x} <br/>
+          sy: ${this.baseRect.y} <br/>
+          ex: ${coordinate.x} <br/>
+          ey: ${coordinate.y} <br/>
+          moveWidth: ${this.baseRect.w} <br/>
+          moveHeight: ${this.baseRect.h} <br/>
         `;
     });
 
@@ -282,4 +282,25 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
       this.isMouseDown = false;
     });
   };
+
+  openWindow() {
+    // const WindowPrt = window.open('', '', 'left=0,top=0,width=900,height=900,toolbar=0,scrollbars=0,status=0');
+		// 		WindowPrt.document.write(h);
+
+		// 		const elStyles = document.querySelectorAll('style');
+		// 		let k: HTMLStyleElement;
+
+		// 		for (let i = 0; i < elStyles.length; i++) {
+		// 			k = document.createElement('style');
+		// 			k.innerHTML = elStyles[i].innerHTML;
+		// 			WindowPrt.document.head.appendChild(k);
+		// 		}
+		// 		WindowPrt.document.close();
+		// 		WindowPrt.focus();
+
+		// 		setTimeout(() => {
+		// 			WindowPrt.print();
+		// 			WindowPrt.close();
+		// 		}, delay);
+  }
 }
