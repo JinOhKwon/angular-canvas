@@ -1,0 +1,13 @@
+
+<div>
+	<ngb-carousel [showNavigationArrows]="showNavigationArrows"
+		[showNavigationIndicators]="showNavigationIndicators">
+		<ng-template ngbSlide *ngFor="let image of images" [id]="image.id">
+			<img [src]="image.url" alt="Random slide">
+			<div class="carousel-caption">
+				<h3>No mouse navigation</h3>
+				<p>This carousel hides navigation arrows and indicators.</p>
+			</div>
+		</ng-template>
+	</ngb-carousel>
+</div>

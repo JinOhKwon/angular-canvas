@@ -4,7 +4,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CavasExampleComponent } from './cavas-example/cavas-example.component';
 import { DassCanvasComponent } from './ui-component/canvas/dass-canvas.component';
-import { PrintComponent } from './ui-component/print/print.component';
+import { CarouselComponent } from './ui-component/carousel/carousel.component';
+import { NgbCarousel } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -12,7 +13,8 @@ import { PrintComponent } from './ui-component/print/print.component';
     AppComponent,
     CavasExampleComponent,
     DassCanvasComponent,
-    PrintComponent
+    CarouselComponent,
+    NgbCarousel
   ],
   imports: [
     BrowserModule,
