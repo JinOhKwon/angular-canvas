@@ -1,16 +1,17 @@
-<div>
-  <canvas #baseCanvasEl width="500" height="500" style="border:1px solid #000000;"></canvas>
-</div>
-<div>
-  <canvas #scaleCanvasEl width="300" height="300" style="border:1px solid #000000; margin-top: 10px"></canvas>
-</div>
-<div>
-  <p id="x" style="font-size: 15px; position: absolute; top: 50;"></p>
-</div>
-<div>
-  <button (click)="drawRoate(180);">이미지 회전하기</button>
+<div class="dass-canvas">
+	<div class="left">
+		<canvas #baseCanvasEl width="500" height="500" style="border:1px solid #000000;"></canvas>
+	</div>
+
+	<!-- 확대영역이 있을경우에만 한다. -->
+	<div class="right" *ngIf="isScaleCanvas">
+		<canvas #scaleCanvasEl width="300" height="300" style="border:1px solid #000000; margin-top: 10px"></canvas>
+		<div class="buttonArea">
+			<button (click)="drawRoate(180);">이미지 회전하기</button>
+		</div>
+	</div>
 </div>
 
 <div>
-  <button (click)="openWindow()">오픈 창</button>
+	<p id="x" style="font-size: 15px; position: absolute; top: 50;"></p>
 </div>

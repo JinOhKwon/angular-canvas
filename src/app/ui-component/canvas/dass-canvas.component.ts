@@ -1,4 +1,36 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input } from '@angular/core';
+
+/*****************************************************************
+ * 					Interface 영역
+ *****************************************************************/
+
+export interface CanvasOption {
+	width?: number,
+	heigth?: number
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Component({
 	selector: 'dass-canvas',
@@ -75,10 +107,60 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 	 */
 	img: HTMLImageElement = new Image();
 
+	// /**
+	//  * 이미지 주소
+	//  */
+	// // imgAddr: string = this.img.src = 'https://img.huffingtonpost.com/asset/5c21ca84240000f1059a377d.jpeg?ops=scalefit_630_noupscale';
+	// imgAddr: string = this.img.src = 'https://img.huffingtonpost.com/asset/5c21ca84240000f1059a377d.jpeg?ops=scalefit_630_noupscale';
+
+	/*****************************************************************
+	 * 					Data 영역
+	 *****************************************************************/
+	
 	/**
-	 * 이미지 주소
+	 * 스캐일 캔버스 여부
 	 */
-	imgAddr: string = this.img.src = 'http://www.mhc.kr/files/attach/images/779/229/882/006/a9428b7f2adb9b5b243255d9c5c491dd.jpg';
+	isScaleCanvas: boolean = true;
+
+	/**
+	 * 캔버스 이미지 데이터
+	 */
+	canvasImgData: any;
+
+	/**
+	 * 캔버스 옵션 영역
+	 */
+	@Input() canvasOption: CanvasOption;
+
+	@Input() set data(data: any) {
+		data.forEach(el => {
+			this.canvasImgData = el.url;
+			console.log(`canvasImgData =>> ${this.canvasImgData}`);
+		});
+		
+		this.img.src = this.canvasImgData;
+	}
+
+	// 마우스 이벤트에서 대해서 전파 받는 방식은 어떻게 해결해야하는가?
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	/**
 	 * 생성자이다.

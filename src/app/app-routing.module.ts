@@ -8,7 +8,7 @@ const routes: Routes = [
   //default routing : dashboard...
 	{
 		path: '',
-		redirectTo: '/carousel',
+		redirectTo: '/canvas-example',
 		pathMatch: 'full'
   },
   {
