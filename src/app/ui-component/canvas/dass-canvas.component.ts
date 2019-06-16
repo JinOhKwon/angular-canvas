@@ -1,43 +1,24 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
 
-/*****************************************************************
- * 					Interface 영역
- *****************************************************************/
-
+/**
+ * 캔버스 옵션
+ * 
+ * @interface CanvasOption
+ * @description 캔버스 크기 옵션 설정이다.
+ */
 export interface CanvasOption {
-	width?: number,
-	heigth?: number
+	baseWidth?: number,
+	baseHeight?: number,
+	scaleWidth?: number,
+	scaleHeight?: number,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @Component({
 	selector: 'dass-canvas',
 	templateUrl: './dass-canvas.component.html',
 	styleUrls: ['./dass-canvas.component.scss']
 })
-export class DassCanvasComponent implements AfterViewInit, OnInit {
+export class DassCanvasComponent implements AfterViewInit {
 	/**
 	  * 뷰 요소 캔버스 객체
 	  * 
@@ -128,39 +109,32 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 	canvasImgData: any;
 
 	/**
+	 * 캔버스 도우미
+	 */
+	cvsHelper: CanvasHelper;
+
+	/**
 	 * 캔버스 옵션 영역
 	 */
 	@Input() canvasOption: CanvasOption;
 
+	/**
+	 * 캔버스 data
+	 */
 	@Input() set data(data: any) {
-		data.forEach(el => {
-			this.canvasImgData = el.url;
-			console.log(`canvasImgData =>> ${this.canvasImgData}`);
-		});
-		
+		this.canvasImgData = data[1].url;
+
+		/**
+		 * TODO [원인파악필요!] image가 페이지 최초 호출 시에는 로딩이 되지 않고 이벤트 발생시 로드 되어진다.
+		 * 단! 새로고침 후 진행하면 정상작동한다.
+		 * 
+		 * 단서
+		 *  - 라이프 사이클 순서 : 생성자 -> setter -> onInit -> ngAfterViewInit
+		 *  - drawimage함수의 순서를 모든 곳에 대입해봐도 동일증상
+		 *  - img.onload 및 img.src의 할당 위치를 모든 곳에 대입해봐도 동일증상
+		 */
 		this.img.src = this.canvasImgData;
 	}
-
-	// 마우스 이벤트에서 대해서 전파 받는 방식은 어떻게 해결해야하는가?
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	/**
 	 * 생성자이다.
@@ -180,24 +154,20 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 		this.baseCtx = this.baseCanvas.getContext('2d');
 		this.scaleCtx = this.scaleCanvas.getContext('2d');
 
+		this.cvsHelper = new CanvasHelper(this.baseCanvas, this.scaleCanvas, this.img, this.canvasOption);
+		this.cvsHelper.setCanvasOption();
+
 		this.addListeners();
 
 		// 1. 기본 캔버스를 그린다.
 		this.drawBase();
-
+		
 		// 2. 확대영역 캔버스를 그린다.
-		let scaleRange = this.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
+		let scaleRange = this.cvsHelper.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
 		this.drawScale(scaleRange.x, scaleRange.y, scaleRange.w, scaleRange.h);
 
 		// 3. 기본 캔버스의 사각형을 그린다.
 		this.drawRectangle(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
-	}
-
-	/**
-	 * 화면 부르기전 초기화 함수다.
-	 */
-	ngOnInit() {
-
 	}
 
 	/**
@@ -277,14 +247,98 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 	drawRoate(degree: number) {
 		360 === this.radian ? this.radian = degree : this.radian += degree;
 		this.drawBase();
-		let scaleRect = this.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
+		let scaleRect = this.cvsHelper.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
 		this.drawScale(scaleRect.x, scaleRect.y, scaleRect.w, scaleRect.h);
 		this.drawRectangle(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
 	}
 
-	/***********************************************************************************************
-	 *                                      Helper Objects                                         *
-	 ***********************************************************************************************/
+	/**
+	 * 이벤트 리스너를 등록한다.
+	 */
+	addListeners() {
+		// 콜백으로 내가 원하는 함수로 바인딩 되지 않음... 콜백 함수 구현체에다가 내가 만든 함수를 호출
+		// 1. 캔버스 마우스진입해서 마우스 오버로 좌표를 체크한다.
+		this.baseCanvas.addEventListener('mousedown', (evt) => {
+			this.isMouseDown = true;
+
+			const coordinate = this.cvsHelper.getMousePos(evt);
+			// 전체 가로 - 캔버스 왼쪽값 / 캔버스 오른쪽값 - 캔버스 왼쪽값 * 캔버스 가로
+			this.baseRect.x = coordinate.x;
+			this.baseRect.y = coordinate.y;
+		});
+
+		// 2. 마우스가 클릭이 시작되었을때 해당 좌표를 구하며 있다가 시작을 하였을때 좌표를 구한다.
+		this.baseCanvas.addEventListener('mousemove', (evt) => {
+			// 마우스 클릭상태가 아니라면...
+			if (!this.isMouseDown) {
+				return;
+			}
+
+			const coordinate = this.cvsHelper.getMousePos(evt);
+			this.baseRect.w = coordinate.x - this.baseRect.x;
+			this.baseRect.h = coordinate.y - this.baseRect.y;
+
+			this.drawBase();
+
+			let scaleRect = this.cvsHelper.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
+			this.drawScale(scaleRect.x, scaleRect.y, scaleRect.w, scaleRect.h);
+
+			this.drawRectangle(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
+
+			document.getElementById('x').innerHTML =
+			`
+				sx: ${this.baseRect.x} <br/>
+				sy: ${this.baseRect.y} <br/>
+				ex: ${coordinate.x} <br/>
+				ey: ${coordinate.y} <br/>
+				moveWidth: ${this.baseRect.w} <br/>
+				moveHeight: ${this.baseRect.h} <br/>
+        	`;
+		});
+
+		// 3. 마우스가 움직이는 거리마다 해당 좌표를 구한다.
+		this.baseCanvas.addEventListener('mouseup', (evt) => {
+			this.isMouseDown = false;
+		});
+	};
+}
+
+/**
+ * 캔버스 헬퍼 도우미이다.
+ */
+class CanvasHelper {
+	/**
+	 * 기본 캔버스
+	 */
+	baseCanvas: HTMLCanvasElement;
+
+	/**
+	 * 스캐일 캔버스
+	 */
+	scaleCanvas: HTMLCanvasElement;
+
+	/**
+	 * 이미지
+	 */
+	img: HTMLImageElement = new Image();
+
+	/**
+	 * 캔버스 옵션
+	 */
+	canvasOption: CanvasOption
+
+	/**
+	 * 생성자이다.
+	 * 
+	 * @param baseCanvas 기본 캔버스
+	 * @param img 이미지
+	 */
+	constructor(baseCanvas, scaleCanvas, img, canvasOption) {
+		this.baseCanvas = baseCanvas;
+		this.scaleCanvas = scaleCanvas;
+		this.img = img;
+		this.canvasOption = canvasOption;
+	}
 
 	/**
 	 * 마우스 좌표를 가져온다.
@@ -316,52 +370,22 @@ export class DassCanvasComponent implements AfterViewInit, OnInit {
 	}
 
 	/**
-	 * 이벤트 리스너를 등록한다.
+	 * 캔버스 옵션을 설정한다.
 	 */
-	addListeners() {
-		// 콜백으로 내가 원하는 함수로 바인딩 되지 않음... 콜백 함수 구현체에다가 내가 만든 함수를 호출
-		// 1. 캔버스 마우스진입해서 마우스 오버로 좌표를 체크한다.
-		this.baseCanvas.addEventListener('mousedown', (evt) => {
-			this.isMouseDown = true;
+	setCanvasOption() {
+		if (this.canvasOption.baseWidth !== null || this.canvasOption.baseWidth !== undefined) {
+			this.baseCanvas.width = this.canvasOption.baseWidth;
+		}
+		if (this.canvasOption.baseHeight !== null || this.canvasOption.baseHeight !== undefined) {
+			this.baseCanvas.height = this.canvasOption.baseHeight;
+		}
 
-			const coordinate = this.getMousePos(evt);
-			// 전체 가로 - 캔버스 왼쪽값 / 캔버스 오른쪽값 - 캔버스 왼쪽값 * 캔버스 가로
-			this.baseRect.x = coordinate.x;
-			this.baseRect.y = coordinate.y;
-		});
-
-		// 2. 마우스가 클릭이 시작되었을때 해당 좌표를 구하며 있다가 시작을 하였을때 좌표를 구한다.
-		this.baseCanvas.addEventListener('mousemove', (evt) => {
-			// 마우스 클릭상태가 아니라면...
-			if (!this.isMouseDown) {
-				return;
-			}
-
-			const coordinate = this.getMousePos(evt);
-			this.baseRect.w = coordinate.x - this.baseRect.x;
-			this.baseRect.h = coordinate.y - this.baseRect.y;
-
-			this.drawBase();
-
-			let scaleRect = this.getScaleRangeByRect(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
-			this.drawScale(scaleRect.x, scaleRect.y, scaleRect.w, scaleRect.h);
-
-			this.drawRectangle(this.baseRect.x, this.baseRect.y, this.baseRect.w, this.baseRect.h);
-
-			document.getElementById('x').innerHTML =
-				`
-          sx: ${this.baseRect.x} <br/>
-          sy: ${this.baseRect.y} <br/>
-          ex: ${coordinate.x} <br/>
-          ey: ${coordinate.y} <br/>
-          moveWidth: ${this.baseRect.w} <br/>
-          moveHeight: ${this.baseRect.h} <br/>
-        `;
-		});
-
-		// 3. 마우스가 움직이는 거리마다 해당 좌표를 구한다.
-		this.baseCanvas.addEventListener('mouseup', (evt) => {
-			this.isMouseDown = false;
-		});
-	};
+		if (this.canvasOption.scaleWidth !== null || this.canvasOption.scaleWidth !== undefined) {
+			this.scaleCanvas.width = this.canvasOption.scaleWidth;
+		}
+		if (this.canvasOption.scaleHeight !== null || this.canvasOption.scaleHeight !== undefined) {
+			this.scaleCanvas.height = this.canvasOption.scaleHeight;
+		}
+	}
 }
+

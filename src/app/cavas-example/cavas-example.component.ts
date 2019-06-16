@@ -28,8 +28,10 @@ export class CavasExampleComponent implements OnInit , AfterViewInit{
   ngOnInit() {
 
     this.canvasOption = {
-      width : 1000,
-      height: 1000
+      baseWidth : 1000,
+      baseHeight: 1000,
+      scaleWidth: 500,
+	    scaleHeight: 500,
     }
     
     this.imageData = [
